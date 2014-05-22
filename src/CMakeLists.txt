@@ -5,6 +5,7 @@ cmake_minimum_required (VERSION 2.8)
 project (visualTracking_openCV)
  
 find_package (OpenCV REQUIRED) 
+#find_package (SFML REQUIRED) 
 
 # Exécutable "hello", compilé à partir du fichier helloworld.c
 add_executable (trackingandfollowing tracking.cpp)
