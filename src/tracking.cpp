@@ -33,8 +33,14 @@ int main (int argc, char* argv[])
 	IplImage * camflow_s;
 	IplImage * camflow_v;
 	IplImage * camflow_h_th;
+	IplImage * camflow_h_th_up;
+	IplImage * camflow_h_th_ls;
 	IplImage * camflow_s_th;
+	IplImage * camflow_s_th_up;
+	IplImage * camflow_s_th_ls;
 	IplImage * camflow_v_th;
+	IplImage * camflow_v_th_up;
+	IplImage * camflow_v_th_ls;
 	IplImage * camflow_blobs;
 	IplImage * camflow_blobs_smooth;
 	
@@ -50,8 +56,14 @@ int main (int argc, char* argv[])
 	camflow_s = cvCreateImage(cvSize(camflow->width,camflow->height), camflow->depth, 1);
 	camflow_v = cvCreateImage(cvSize(camflow->width,camflow->height), camflow->depth, 1);
 	camflow_h_th = cvCreateImage(cvSize(camflow->width,camflow->height), camflow->depth, 1);
+	camflow_h_th_up = cvCreateImage(cvSize(camflow->width,camflow->height), camflow->depth, 1);
+	camflow_h_th_ls = cvCreateImage(cvSize(camflow->width,camflow->height), camflow->depth, 1);
 	camflow_s_th = cvCreateImage(cvSize(camflow->width,camflow->height), camflow->depth, 1);
+	camflow_s_th_up = cvCreateImage(cvSize(camflow->width,camflow->height), camflow->depth, 1);
+	camflow_s_th_ls = cvCreateImage(cvSize(camflow->width,camflow->height), camflow->depth, 1);
 	camflow_v_th = cvCreateImage(cvSize(camflow->width,camflow->height), camflow->depth, 1);
+	camflow_v_th_up = cvCreateImage(cvSize(camflow->width,camflow->height), camflow->depth, 1);
+	camflow_v_th_ls = cvCreateImage(cvSize(camflow->width,camflow->height), camflow->depth, 1);
 	camflow_blobs = cvCreateImage(cvSize(camflow->width,camflow->height), camflow->depth, 1);
 	camflow_blobs_smooth = cvCreateImage(cvSize(camflow->width,camflow->height), camflow->depth, 1);
 
@@ -67,13 +79,36 @@ int main (int argc, char* argv[])
 		cvCvtColor(camflow, camflow_hsv, CV_BGR2HSV);
 		cvSplit(camflow_hsv, camflow_h, camflow_s, camflow_v, NULL);
 
+		// No transform
+	/*	cvThreshold(camflow_h, camflow_h_th, 0, 255, THRESH_BINARY);
+		cvThreshold(camflow_s, camflow_s_th, 0, 255, THRESH_BINARY);
+		cvThreshold(camflow_v, camflow_v_th, 0, 255, THRESH_BINARY);*/
+
+		// Get only red
+		// Hue is 0-180, Saturation and Value are 0-255
+		// For red : [H : 175 -> 5]
+		// For blue : [H : 110 -> 130]
+		// For blue : [H : 50 -> 70]
+
+		cvThreshold(camflow_h, camflow_h_th_ls, 175, 255, THRESH_BINARY);
+		cvThreshold(camflow_h, camflow_h_th_up, 5, 255, THRESH_BINARY_INV);
+		cvMul(camflow_h_th_up, camflow_h_th_ls, camflow_h_th, 1.0/255.0);
+
+		cvThreshold(camflow_s, camflow_s_th_ls, 0, 255, THRESH_BINARY);
+		cvThreshold(camflow_s, camflow_s_th_up, 0, 255, THRESH_BINARY);
+		cvMul(camflow_s_th_up, camflow_s_th_ls, camflow_s_th, 1.0/255.0);
+		
+		cvThreshold(camflow_v, camflow_v_th_ls, 204, 255, THRESH_BINARY);
+		cvThreshold(camflow_v, camflow_v_th_up, 204, 255, THRESH_BINARY);
+		cvMul(camflow_v_th_up, camflow_v_th_ls, camflow_v_th, 1.0/255.0);
+
 //		cvThreshold(camflow_h, camflow_h_th, 115, 255, THRESH_BINARY);
 //		cvThreshold(camflow_h_th, camflow_h_th, 125, 255, THRESH_BINARY_INV);
-		cvThreshold(camflow_h, camflow_h_th, 170, 255, THRESH_BINARY);
-		cvThreshold(camflow_h_th, camflow_h_th, 10, 255, THRESH_BINARY_INV);
-		cvThreshold(camflow_s, camflow_s_th, 200, 255, THRESH_BINARY);
+//		cvThreshold(camflow_h, camflow_h_th, 170, 255, THRESH_BINARY);
+//		cvThreshold(camflow_h_th, camflow_h_th, 10, 255, THRESH_BINARY_INV);
+//		cvThreshold(camflow_s, camflow_s_th, 200, 255, THRESH_BINARY);
 //		cvThreshold(camflow_s, camflow_s_th, 5, 255, THRESH_BINARY_INV);
-		cvThreshold(camflow_v, camflow_v_th, 170, 255, THRESH_BINARY);
+//		cvThreshold(camflow_v, camflow_v_th, 170, 255, THRESH_BINARY);
 //		cvThreshold(camflow_v, camflow_v_th, 5, 255, THRESH_BINARY_INV);
 
 		//camflow_blobs->imageData = (camflow_h_th->imageData + camflow_h_th->imageData + camflow_h_th->imageData) / 3.0;
@@ -92,18 +127,19 @@ int main (int argc, char* argv[])
 		*camflow_blobs_smooth = smoothed;
 
 		// Compute center of the cluster, draw a point to get the coordinates
+		// TODO !
 
-	/*	cvShowImage("input", camflow);
-		cvMoveWindow("input",windowsOffset,10);
+		cvShowImage("input", camflow);
+	//	cvMoveWindow("input",windowsOffset,10);
 		cvShowImage("H", camflow_h_th);
-		cvMoveWindow("H",windowsOffset,525);
+	//	cvMoveWindow("H",windowsOffset,525);
 		cvShowImage("S", camflow_s_th);
-		cvMoveWindow("S",windowsOffset+650,525);
+	//	cvMoveWindow("S",windowsOffset+650,525);
 		cvShowImage("V", camflow_v_th);
-		cvMoveWindow("V",windowsOffset+650*2,525);
-		cvShowImage("HSV", camflow_hsv);
-		cvMoveWindow("HSV",windowsOffset+650,10);
-	*/	cvShowImage("Out", camflow_blobs_smooth);
+	//	cvMoveWindow("V",windowsOffset+650*2,525);
+	//	cvShowImage("HSV", camflow_hsv);
+	//	cvMoveWindow("HSV",windowsOffset+650,10);
+		cvShowImage("Out", camflow_blobs_smooth);
 	//	cvMoveWindow("Out",windowsOffset+650*2,10);
 		key = cvWaitKey(10);
 	}
