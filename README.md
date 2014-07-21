@@ -1,5 +1,7 @@
 # Calculo Sed Ergo Sum
 
+=======
+
 Calculo Sed Ergo Sum (CSES) is a global project for AI and robotics.
 
 ## Installing
@@ -14,3 +16,4 @@ Calculo Sed Ergo Sum (CSES) is a global project for AI and robotics.
 
     make
 
+=======
